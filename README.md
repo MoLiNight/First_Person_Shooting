@@ -57,6 +57,10 @@ Asset: Off Screen Target Indicator 实现效果:
 
 ![image](https://github.com/user-attachments/assets/4386da63-d9d6-4de4-932f-82f73544a597)
 
+其中，Animation Position 脚本用于使动画系统支持相对坐标；
+
+![image](https://github.com/user-attachments/assets/25ca27b0-c5ab-4413-bd08-001c3beff287)
+
 Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图所示: 
 
 ![image](https://github.com/user-attachments/assets/3d902706-6658-4d33-a412-bc708469faf2)
@@ -67,7 +71,11 @@ Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图
 
 调整 Animator Controller 内的 float 类型变量 Blend (0 / 0.5 / 1) 的值以调节运动靶标运动轨迹 (圆周运动 / 三角运动 / 矩阵运动);
 
+
+
 #### 5. 射击位：地图上应标记若干射击位，仅在射击位附近或区域可以拉弓射击，每个位置有 n 次机会；
+
+
 
 #### 6. 摄像机：使用多摄像机，制作 鸟瞰图 或 瞄准镜图 使得游戏更加易于操控；
 
@@ -79,9 +87,19 @@ Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图
 
 将 PlayerFollowCamera 的 CinemachineVirtualCamera 组件内的 Follow 设置为 PlayerCapsule 的子物体 PlayerCameraRoot;
 
-Ctrl + D PlayerFollowCamera, 将新 GameObject 命名为 ScopedCamera, 调节其 CinemachineVirtualCamera 组件内的 Lens 属性； 
+选中 PlayerFollowCamera, Ctrl + D, 并将新 GameObject 命名为 ScopedCamera, 调节其 CinemachineVirtualCamera 组件内的 Lens 属性； 
+
+编写 CameraController 脚本并将其绑定在 MainCamera 上, 脚本内使用 SetActive() 函数实现摄像机的切换，场景效果如下图所示：
+
+![image](https://github.com/user-attachments/assets/51a37c06-d66b-4e08-b811-374a6de488ad)
 
 #### 7. 声音：使用声音组件，播放背景音 与 箭射出的声效；
+
+创建含 Audio Source 组件的游戏对象 BackgroundMusic 用于播放背景音乐；
+
+编写 CrossbowController 脚本，将其绑定在 Crossbow (Classical Crossbow 内的 Model) 上；
+
+在 CrossbowController 脚本内, 为 Crossbow 添加 Audio Source 组件，在拉弓 (Filling) 与射箭 (Shooting) 时设置相应的 Audio Clip 并播放 Audio Source；
 
 ## 四、运动与物理与动画实现
 
