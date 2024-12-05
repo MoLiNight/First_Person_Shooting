@@ -41,9 +41,15 @@ MainCamera 内的 SkyBox 相关 component 的情况如下图所示;
 
 ![image](https://github.com/user-attachments/assets/8a509e79-cf5b-42c5-b745-fa3ff18613ed)
 
-其中, Target 脚本为 Asset: Off Screen Target Indicator 内的给定脚本，与该 Asset 的 Demo 内的 OffScreenIndicator Panel 配合，实现下图呈现的视觉效果；
+Asset: Off Screen Target Indicator 使用方法:
 
-![image](https://github.com/user-attachments/assets/3c5a9443-d6cd-41bf-9c56-04d44a860cda)
+a. 目标组件添加 Target 脚本；
+
+b. 为项目内的含 CinemachineVirtualCamera 的物体添加 Extended Flycam 脚本；
+
+c. 向 Canvas 内添加 OffScreenIndicator Panel 物体 (可直接使用 Demo 内的 Canvas)；
+
+Asset: Off Screen Target Indicator 实现效果:
 
 ![image](https://github.com/user-attachments/assets/eb97e994-4ab8-477c-9591-785fb9fcc2bc)
 
@@ -64,6 +70,16 @@ Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图
 #### 5. 射击位：地图上应标记若干射击位，仅在射击位附近或区域可以拉弓射击，每个位置有 n 次机会；
 
 #### 6. 摄像机：使用多摄像机，制作 鸟瞰图 或 瞄准镜图 使得游戏更加易于操控；
+
+使用 Starter Assets - FirstPerson 内的 MainCamera, PlayerFollowCamera 与 PlayerCapsule；
+
+![image](https://github.com/user-attachments/assets/90aeb3a4-bd7e-4c01-ac30-022700ecbc4e)
+
+将 MainCamera 的 CinemachineBrain 组件内的 Default Blend 设置为 Cut, 以匹配开镜的视觉效果；
+
+将 PlayerFollowCamera 的 CinemachineVirtualCamera 组件内的 Follow 设置为 PlayerCapsule 的子物体 PlayerCameraRoot;
+
+Ctrl + D PlayerFollowCamera, 将新 GameObject 命名为 ScopedCamera, 调节其 CinemachineVirtualCamera 组件内的 Lens 属性； 
 
 #### 7. 声音：使用声音组件，播放背景音 与 箭射出的声效；
 
