@@ -1,5 +1,5 @@
 # 【Unity】《第一人称射箭游戏》- Lab5 博客 
-video URL: 
+video URL: https://www.bilibili.com/video/BV1BzidYnEcP/
 --- 
 ## 一、项目配置 
 1. 项目编辑器： 2021.3.11f1c2，该版本以上的 Unity 编辑器会发生 URP 编译错误； 
