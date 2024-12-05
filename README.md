@@ -23,7 +23,7 @@ video URL:
   (4) 驽弓动画（2分）：使用 动画机 与 动画融合, 实现十字驽蓄力半拉弓，然后 hold，择机 shoot；  
 ## 三、游戏场景实现  
 #### 1. 地形：使用地形组件，上面有山、路、草、树；（可使用第三方资源改造）;  
-在 Fantasy Skybox FREE 的 Demo 内的 Terrain 的基础上，进行参数的修改和草与树 (URP Tree Models) 的添加; 
+在 Fantasy Skybox FREE 的 Demo 内的 Terrain 的基础上，进行参数的修改和草与树 (URP Tree Models, 自行向 Models 内添加碰撞体) 的添加;
 
 <img width="958" alt="72273d1f6ecfd0e444b2fb8500ec75e" src="https://github.com/user-attachments/assets/160834f7-c0bc-483d-9105-e3cd0049d207">
 
@@ -41,10 +41,25 @@ MainCamera 内的 SkyBox 相关 component 的情况如下图所示;
 
 ![image](https://github.com/user-attachments/assets/8a509e79-cf5b-42c5-b745-fa3ff18613ed)
 
+其中, Target 脚本为 Asset: Off Screen Target Indicator 内的给定脚本，与该 Asset 的 Demo 内的 OffScreenIndicator Panel 配合，实现下图呈现的视觉效果；
+
+![image](https://github.com/user-attachments/assets/3c5a9443-d6cd-41bf-9c56-04d44a860cda)
+
+![image](https://github.com/user-attachments/assets/eb97e994-4ab8-477c-9591-785fb9fcc2bc)
+
 #### 4. 运动靶：使用动画运动，有一个以上运动靶标，运动轨迹，速度使用动画控制；（注：射中后需要有效果或自然落下）；
 
 ![image](https://github.com/user-attachments/assets/4386da63-d9d6-4de4-932f-82f73544a597)
 
+Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图所示: 
+
+![image](https://github.com/user-attachments/assets/3d902706-6658-4d33-a412-bc708469faf2)
+
+调整 State: TargetMove 内的 float 类型参数 Speed 的值以调节运动靶标的运动速度;
+
+![image](https://github.com/user-attachments/assets/eabc9a18-4733-4c1b-a83f-55af4ebf8ed2)
+
+调整 Animator Controller 内的 float 类型变量 Blend (0 / 0.5 / 1) 的值以调节运动靶标运动轨迹 (圆周运动 / 三角运动 / 矩阵运动);
 
 #### 5. 射击位：地图上应标记若干射击位，仅在射击位附近或区域可以拉弓射击，每个位置有 n 次机会；
 
