@@ -200,3 +200,105 @@ Arrow 碰撞到 KineticTarget 后，运动靶停止运动，不再被 Target Ind
 
 
 #### 4. 驽弓动画：使用 动画机 与 动画融合, 实现十字驽蓄力半拉弓，然后 hold，择机 shoot；
+
+Crossbow (Classical Crossbow 内的 Model) 内 Animator 组件的 Animator Controller 详情如下图所示: 
+
+![image](https://github.com/user-attachments/assets/1e0544c2-a515-4deb-b5ba-f3a13e129429)
+
+取消 Transition: Filling -> Hold 内的 Has Exit Time 的勾选； 
+
+选中 Animation: Empty (位于 Model: Crossbow 内), Ctrl + D, 并将新 Animation 命名为 Empty_New, 删除 Empty_New 内与箭相关的运动； 
+
+![image](https://github.com/user-attachments/assets/fed804d9-8749-45af-85c7-08b878f7df30)
+
+Crossbow 绑定的 CrossbowController 脚本的部分代码如下：
+
+```cs
+  void Update()
+  {
+      // 获取当前动画状态信息
+      AnimatorStateInfo animatorStateInfo = animator.GetCurrentAnimatorStateInfo(0);
+  
+      if (Input.GetMouseButtonUp(0))  // 鼠标左键
+      {
+          if (animatorStateInfo.IsName("Filling"))
+          {
+              animator.SetBool("Filling", false);
+          }
+      }
+  
+      if (animatorStateInfo.IsName("Empty"))
+      {
+          if (Input.GetMouseButtonDown(0))
+          {
+              Filling();
+          }
+      }
+      else
+      if (animatorStateInfo.IsName("Filling"))
+      {
+          blend = Mathf.Min(1.0f, animatorStateInfo.normalizedTime);
+          animator.SetFloat("Blend", blend);
+  
+          if (animatorStateInfo.normalizedTime >= 1.0f)  // 十字弩拉满
+          {
+              animator.SetBool("Filling", false);
+              audioSource.Pause();
+          }
+          else
+          if (Input.GetMouseButton(0) == false)  // 十字弩拉满前松开鼠标左键，半拉满
+          {
+              animator.SetBool("Filling", false);
+              audioSource.Pause();
+          }
+      }
+      else
+      if (animatorStateInfo.IsName("Hold"))
+      {
+          if (Input.GetMouseButtonDown(0))
+          {
+              ShootArrow();
+          }
+      }
+      else
+      if (animatorStateInfo.IsName("Shoot"))  // 重置变量，以待下一次射击
+      {
+          if (animatorStateInfo.normalizedTime >= 1.0f)
+          {
+              animator.SetBool("Shooting", false);
+          }
+      }
+  }
+  
+  void Filling()
+  {
+      arrowInModel.SetActive(true);
+      animator.SetBool("Filling", true);
+  
+      // 播放十字弩拉弓音效
+      AudioClip audioClip = Resources.Load<AudioClip>("Audios/Filling");
+      audioSource.clip = audioClip;
+      audioSource.pitch = 1.25f;
+      audioSource.Play();
+  }
+  
+  void ShootArrow()
+  {
+      animator.SetBool("Shooting", true);
+      arrowInModel.SetActive(false);
+  
+      // 播放十字弩射击音效
+      AudioClip audioClip = Resources.Load<AudioClip>("Audios/Shooting");
+      audioSource.clip = audioClip;
+      audioSource.pitch = 1;
+      audioSource.Play();
+  
+      // 创建 Arrow 对象并对其施加力
+      GameObject newArrow = GameObject.Instantiate(Resources.Load("Prefabs/Arrow", typeof(GameObject))) as GameObject;
+      newArrow.transform.position = arrowOriginTransform.position;
+      newArrow.transform.rotation = arrowOriginTransform.rotation;
+  
+      Rigidbody rigidbody = newArrow.GetComponent<Rigidbody>();
+      rigidbody.AddForce(newArrow.transform.forward * 0.3f, ForceMode.Impulse);
+  }
+```
