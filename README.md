@@ -93,7 +93,73 @@ Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图
 
 #### 5. 射击位：地图上应标记若干射击位，仅在射击位附近或区域可以拉弓射击，每个位置有 n 次机会；
 
+创建预制件 ShootArea，作为射击关卡的模板；
 
+![image](https://github.com/user-attachments/assets/05d17af9-1a16-4654-843e-867279d3ee56)
+
+编写 ShootAreaController 脚本，将其绑定于 ShootArea 的 Bottom 上，脚本的部分代码实现如下：
+
+```cs
+  void Update()
+  {
+      if(gameFinished == false)
+      {
+          if (running == true)
+          {
+              bool finished = true;
+              // 判断是否所有运动靶被射中
+              foreach (Transform child in TargetList.transform)
+              {
+                  if (child.gameObject.activeSelf == true)
+                  {
+                      finished = false;
+                      break;
+                  }
+              }
+              if (finished)
+              {
+                  gameFinished = true;
+                  AirWall.SetActive(false);
+                  TipText.GetComponent<Text>().text = "";
+                  // 修改 Bottom 的 Material
+                  gameObject.GetComponent<Renderer>().material = victory;
+              }
+          }
+          // 按键 P 中断挑战
+          if (running == true && Input.GetKeyDown(KeyCode.P))
+          {
+              running = false;
+              AirWall.SetActive(false);
+  
+              foreach (Transform child in TargetList.transform)
+              {
+                  child.gameObject.SetActive(true);
+              }
+              TargetList.SetActive(false);
+  
+              TipText.GetComponent<Text>().text = "";
+              gameObject.GetComponent<Renderer>().material = waiting;
+          }
+      }
+  }
+
+  // 玩家进入射击关卡，开启挑战
+  private void OnCollisionEnter(Collision collision)
+  {
+      if (collision.gameObject.CompareTag("Player") && gameFinished == false)
+      {
+          AirWall.SetActive(true);
+          TargetList.SetActive(true);
+          TipText.GetComponent<Text>().text = "按键 P 中断挑战";
+          running = true;
+          gameObject.GetComponent<Renderer>().material = shooting;
+      }
+  }
+```
+
+地图上的射击关卡布置如下图所示:
+
+![image](https://github.com/user-attachments/assets/a7d1934a-b38e-40e8-a3c4-ed22903f348f)
 
 #### 6. 摄像机：使用多摄像机，制作 鸟瞰图 或 瞄准镜图 使得游戏更加易于操控；
 
@@ -197,7 +263,51 @@ Arrow 碰撞到 KineticTarget 后，运动靶停止运动，不再被 Target Ind
 
 #### 3. 碰撞与计分：使用 计分类 管理规则，在射击位射中靶标得相应分数，规则自定；（注：应具有现场修改游戏规则能力）；
 
+添加 Player 层与 NoCollideWithPlayer 层；
 
+![image](https://github.com/user-attachments/assets/59b74b1b-f4cf-42cc-8aeb-e9c96aca99cd)
+
+Arrow 位于 NoCollideWithPlayer 层；
+
+PlayerCapsule 与 ShootArea 内的 AirWall 位于 Player 层；
+
+计分类脚本 ScoreController 的代码内容如下:
+
+```cs
+  public class ScoreController
+  {
+      private static ScoreController instance;
+      
+      private float currentScore = 0;
+  
+      public static ScoreController GetInstance()
+      {
+          if(instance == null)
+          {
+              instance = new ScoreController();
+          }
+          return instance;
+      }
+
+      // Target：被射中的运动靶, Arrow：射中运动靶的箭
+      public void CalculateScore(GameObject Target, GameObject Arrow)
+      {
+          float distanceWithPlayer = (Camera.main.transform.position - Arrow.transform.position).magnitude;
+
+          Vector3 attackPosition = Arrow.transform.position;
+          attackPosition.z = Target.transform.position.z;  // Arrow 射中处
+          // Arrow 射中处与 Target 中心的距离
+          float distanceWithTargerCenter = (Target.transform.position - attackPosition).magnitude;
+
+          // 距离 / N * 环数
+          currentScore += (distanceWithPlayer / 10) * (10 - distanceWithTargerCenter / 1.5f);
+          currentScore -= currentScore % 1.0f;
+  
+          GameObject ScoreText = GameObject.Find("ScoreText");
+          ScoreText.GetComponent<Text>().text = "Scores: " + currentScore.ToString();
+      }
+  }
+```
 
 #### 4. 驽弓动画：使用 动画机 与 动画融合, 实现十字驽蓄力半拉弓，然后 hold，择机 shoot；
 
@@ -238,7 +348,7 @@ Crossbow 绑定的 CrossbowController 脚本的部分代码如下：
       if (animatorStateInfo.IsName("Filling"))
       {
           blend = Mathf.Min(1.0f, animatorStateInfo.normalizedTime);
-          animator.SetFloat("Blend", blend);
+          animator.SetFloat("Blend", blend);  // 动画融合
   
           if (animatorStateInfo.normalizedTime >= 1.0f)  // 十字弩拉满
           {
