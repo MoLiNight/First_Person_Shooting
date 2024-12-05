@@ -33,7 +33,7 @@ video URL:
 
 MainCamera 内的 SkyBox 相关 component 的情况如下图所示;
 
-![image](https://github.com/user-attachments/assets/844636d0-46fb-4bba-94cc-857d859d43c9)  
+![image](https://github.com/user-attachments/assets/b50a80e1-2d52-432d-b2f3-17c900bcacfb)
 
 在 SkyBoxController 脚本中，每隔 10s 进行一次 skyBox.material 的切换与 light.color 的切换（切换 Directional Light 的灯光颜色以营造更好的氛围感）;
 
