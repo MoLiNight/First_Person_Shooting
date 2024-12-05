@@ -59,6 +59,26 @@ Asset: Off Screen Target Indicator 实现效果:
 
 其中，Animation Position 脚本用于使动画系统支持相对坐标；
 
+```cs
+  public class AnimationPosition : MonoBehaviour
+  {
+      [HideInInspector] public Vector3 positon;
+      private Vector3 startPosition;
+  
+      void Start()
+      {
+          this.startPosition = this.transform.position;
+      }
+  
+      void Update()
+      {
+          Vector3 newPosition = this.startPosition + this.positon;
+          if (newPosition != this.startPosition)
+              this.transform.position = newPosition;
+      }
+  }
+```
+
 ![image](https://github.com/user-attachments/assets/25ca27b0-c5ab-4413-bd08-001c3beff287)
 
 Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图所示: 
@@ -70,8 +90,6 @@ Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图
 ![image](https://github.com/user-attachments/assets/eabc9a18-4733-4c1b-a83f-55af4ebf8ed2)
 
 调整 Animator Controller 内的 float 类型变量 Blend (0 / 0.5 / 1) 的值以调节运动靶标运动轨迹 (圆周运动 / 三角运动 / 矩阵运动);
-
-
 
 #### 5. 射击位：地图上应标记若干射击位，仅在射击位附近或区域可以拉弓射击，每个位置有 n 次机会；
 
@@ -89,7 +107,21 @@ Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图
 
 选中 PlayerFollowCamera, Ctrl + D, 并将新 GameObject 命名为 ScopedCamera, 调节其 CinemachineVirtualCamera 组件内的 Lens 属性； 
 
-编写 CameraController 脚本并将其绑定在 MainCamera 上, 脚本内使用 SetActive() 函数实现摄像机的切换，场景效果如下图所示：
+编写 CameraController 脚本;
+
+```cs
+  void Update()
+  {
+      if (Input.GetMouseButtonDown(1))  // 鼠标右键
+      {
+          is_normal = !is_normal;
+          normalCamera.SetActive(is_normal);
+          scopedCamera.SetActive(!is_normal);
+      }
+  }
+```
+
+将 CameraController 脚本绑定在 MainCamera 上，瞄准后的场景效果如下图所示：
 
 ![image](https://github.com/user-attachments/assets/51a37c06-d66b-4e08-b811-374a6de488ad)
 
@@ -105,8 +137,66 @@ Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图
 
 #### 1. 游走：使用第一人称组件，玩家的驽弓可在地图上游走，不能碰上树和靶标等障碍；（注：建议使用 unity 官方案例）；
 
+使用 Unity 官方案例 Starter Assets - FirstPerson 实现，详见上文 "三、游戏场景实现 —— 6. 摄像机"；
+
 #### 2. 射击效果：使用 物理引擎 或 动画 或 粒子，运动靶被射中后产生适当效果；
 
+编写 ArrowController 脚本，并将其绑定在 Arrow (Classical Crossbow 内的 Prefab) 上，并添加 OnCollisionEnter() 的碰撞判定；
+
+```cs
+  // ArrowController
+  void OnCollisionEnter(Collision collision)
+  {
+      waitDestroy = true;
+  
+      // 箭射中物体后停止运动
+      Rigidbody rigidbody = gameObject.GetComponent<Rigidbody>();
+      rigidbody.isKinematic = true;
+      rigidbody.velocity = Vector3.zero;
+
+      // 播放箭射中的音效
+      if (collision.gameObject.CompareTag("StaticTarget") || collision.gameObject.CompareTag("KineticTarget"))
+      {
+          AudioClip audioClip = Resources.Load<AudioClip>("Audios/ShootToTarget");
+          audioSource.clip = audioClip;
+          audioSource.volume = 0.5f;
+          audioSource.Play();
+      }
+
+      // 运动靶被射中后的效果实现
+      if (collision.gameObject.CompareTag("KineticTarget"))
+      {
+          TargetController controller = collision.gameObject.GetComponent<TargetController>();
+          controller.ShootToTarget();
+
+          destroyTime = 1.5f;
+          // 调用计分类函数
+          ScoreController scoreController = ScoreController.GetInstance();
+          scoreController.CalculateScore(collision.gameObject, gameObject);
+      }
+  }
+
+  // TargetController
+  public void ShootToTarget()
+  {
+      // 创建粒子系统
+      GameObject particle = Instantiate(Resources.Load<GameObject>("Prefabs/ParticleSystem"));
+      particle.transform.position = gameObject.transform.position;
+  
+      waitDestroy = true;
+      // 避免射中后的运动靶的干扰
+      gameObject.GetComponent<Animator>().enabled = false;
+      gameObject.GetComponent<Target>().enabled = false;
+      gameObject.GetComponent<MeshCollider>().enabled = false;
+  }
+```
+
+Arrow 碰撞到 KineticTarget 后，运动靶停止运动，不再被 Target Indicator 标记为目标，并在停止运动的位置创建 Prefab: ParticleSystem; 1.5s 后，运动靶与创建的粒子系统一同销毁；
+
+![image](https://github.com/user-attachments/assets/aabe4a6b-68bd-46bd-ae76-34305d733cfb)
+
 #### 3. 碰撞与计分：使用 计分类 管理规则，在射击位射中靶标得相应分数，规则自定；（注：应具有现场修改游戏规则能力）；
+
+
 
 #### 4. 驽弓动画：使用 动画机 与 动画融合, 实现十字驽蓄力半拉弓，然后 hold，择机 shoot；
