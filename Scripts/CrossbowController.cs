@@ -1,9 +1,12 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CrossbowController : MonoBehaviour
 {
     public Animator animator;
     private AudioSource audioSource;
+
+    private int arrowNum;
 
     private float blend;
     public GameObject arrowInModel;
@@ -14,6 +17,7 @@ public class CrossbowController : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         blend = 1;
+        arrowNum = 5;
         arrowOriginTransform = arrowInModel.transform;
         audioSource = gameObject.AddComponent<AudioSource>();
     }
@@ -36,7 +40,11 @@ public class CrossbowController : MonoBehaviour
         {
             if (Input.GetMouseButtonDown(0))
             {
-                Filling();
+                if (arrowNum > 0)
+                {
+                    Filling();
+                    SetArrowNum(--arrowNum);
+                }
             }
         }
         else
@@ -101,5 +109,13 @@ public class CrossbowController : MonoBehaviour
 
         Rigidbody rigidbody = newArrow.GetComponent<Rigidbody>();
         rigidbody.AddForce(newArrow.transform.forward * 0.3f, ForceMode.Impulse);
+    }
+
+    public void SetArrowNum(int num)
+    {
+        arrowNum = num;
+
+        GameObject ArrowNumText = GameObject.Find("ArrowNumText");
+        ArrowNumText.GetComponent<Text>().text = "ArrowNum: " + arrowNum.ToString();
     }
 }

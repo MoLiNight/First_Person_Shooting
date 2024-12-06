@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 public class ShootAreaController : MonoBehaviour
 {
+    public GameObject Crossbow;
     public GameObject AirWall;
     public GameObject TargetList;
 
@@ -13,6 +14,7 @@ public class ShootAreaController : MonoBehaviour
     private Material shooting;
     private Material victory;
     private GameObject TipText;
+    private CrossbowController crossbowController;
 
     // Start is called before the first frame update
     void Start()
@@ -24,6 +26,8 @@ public class ShootAreaController : MonoBehaviour
         waiting = Resources.Load<Material>("Materials/Waiting");
         shooting = Resources.Load<Material>("Materials/Shooting");
         victory = Resources.Load<Material>("Materials/Victory");
+
+        crossbowController = Crossbow.GetComponent<CrossbowController>();
     }
 
     // Update is called once per frame
@@ -76,6 +80,8 @@ public class ShootAreaController : MonoBehaviour
             TipText.GetComponent<Text>().text = "按键 P 中断挑战";
             running = true;
             gameObject.GetComponent<Renderer>().material = shooting;
+
+            crossbowController.SetArrowNum(10);
         }
     }
 }
