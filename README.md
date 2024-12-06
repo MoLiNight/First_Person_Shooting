@@ -1,5 +1,9 @@
 # 【Unity】《第一人称射箭游戏》- Lab5 博客  
 Video URL: https://www.bilibili.com/video/BV1BzidYnEcP/  
+## 零、编者前言  
+1. 视频内容不作后续更新，部分场景展示图片不作更新；  
+2. 更新场景展示图片 (地形模块) 与部分脚本代码 (射击位、弩弓动画)；  
+   增加鸟瞰图 (多摄像机要求，画中画)、射击位的射箭次数限制 (射击位要求) 的描述  (24.12.6)；    
 ## 一、项目配置 
 1. 项目编辑器： 2021.3.11f1c2，该版本以上的 Unity 编辑器会发生 URP 编译错误； 
 2. 项目模板：3D Sample Scene(URP)，其余模版会发生 URP 编译错误；
@@ -24,7 +28,7 @@ Video URL: https://www.bilibili.com/video/BV1BzidYnEcP/
 #### 1. 地形：使用地形组件，上面有山、路、草、树；（可使用第三方资源改造）;  
 在 Fantasy Skybox FREE 的 Demo 内的 Terrain 的基础上，进行参数的修改和草与树 (URP Tree Models, 自行向 Models 内添加碰撞体) 的添加;
 
-<img width="958" alt="72273d1f6ecfd0e444b2fb8500ec75e" src="https://github.com/user-attachments/assets/160834f7-c0bc-483d-9105-e3cd0049d207">
+<img width="629" alt="27de59863fb751e9510497fec310b11" src="https://github.com/user-attachments/assets/d3d3d9da-dbc2-4f06-9336-a140bc391aab">   
 
 #### 2. 天空盒：使用天空盒，天空可随 玩家位置 或 时间变化 或 按特定按键切换天空盒;
 
@@ -94,7 +98,7 @@ Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图
 
 创建预制件 ShootArea，作为射击关卡的模板；
 
-![image](https://github.com/user-attachments/assets/05d17af9-1a16-4654-843e-867279d3ee56)
+ShootArea 由 Bottom (关卡地板), AirWall (空气墙) 与 TargetList (空物体，子物体为运动靶) 三部分组成；
 
 编写 ShootAreaController 脚本，将其绑定于 ShootArea 的 Bottom 上，脚本的部分代码实现如下：
 
@@ -147,18 +151,16 @@ Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图
   {
       if (collision.gameObject.CompareTag("Player") && gameFinished == false)
       {
-          AirWall.SetActive(true);
+          AirWall.SetActive(true);  // 激活空气墙
           TargetList.SetActive(true);
           TipText.GetComponent<Text>().text = "按键 P 中断挑战";
           running = true;
           gameObject.GetComponent<Renderer>().material = shooting;
+
+          crossbowController.SetArrowNum(10);  // 更新内容
       }
   }
 ```
-
-地图上的射击关卡布置如下图所示:
-
-![image](https://github.com/user-attachments/assets/a7d1934a-b38e-40e8-a3c4-ed22903f348f)
 
 #### 6. 摄像机：使用多摄像机，制作 鸟瞰图 或 瞄准镜图 使得游戏更加易于操控；
 
@@ -189,6 +191,8 @@ Prefab: KineticTarget 内 Animator 组件的 Animator Controller 详情如下图
 将 CameraController 脚本绑定在 MainCamera 上，瞄准后的场景效果如下图所示：
 
 ![image](https://github.com/user-attachments/assets/51a37c06-d66b-4e08-b811-374a6de488ad)
+
+创建 Camera 对象，将其设为 PlayerCapsule 的 PlayerCameraRoot 的子物体；调整该摄像机的高度，角度，并调节 Camera 组件的 output 属性，实现鸟瞰图的画中画的效果；
 
 #### 7. 声音：使用声音组件，播放背景音 与 箭射出的声效；
 
@@ -340,7 +344,11 @@ Crossbow 绑定的 CrossbowController 脚本的部分代码如下：
       {
           if (Input.GetMouseButtonDown(0))
           {
-              Filling();
+              if (arrowNum > 0)  // 判断是否有箭剩余
+              {
+                  Filling();
+                  SetArrowNum(--arrowNum);
+              }
           }
       }
       else
@@ -409,5 +417,13 @@ Crossbow 绑定的 CrossbowController 脚本的部分代码如下：
   
       Rigidbody rigidbody = newArrow.GetComponent<Rigidbody>();
       rigidbody.AddForce(newArrow.transform.forward * 0.3f, ForceMode.Impulse);
+  }
+
+  public void SetArrowNum(int num)
+  {
+      arrowNum = num;
+    
+      GameObject ArrowNumText = GameObject.Find("ArrowNumText");
+      ArrowNumText.GetComponent<Text>().text = "ArrowNum: " + arrowNum.ToString();
   }
 ```
